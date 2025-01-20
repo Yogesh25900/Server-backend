@@ -1,0 +1,49 @@
+{
+    
+        "greetings": {
+          "examples": ["hello", "hi", "hey", "good morning"],
+          "responses": ["Hello! How can I assist you today?", "Hi there! How can I help you?"]
+        },
+        "weather": {
+          "examples": ["what is the weather", "how's the weather", "tell me the temperature"],
+          "responses": ["Please tell me your location, and I will check the weather for you.", "I can help you with weather details. What's your location?"]
+        },
+        "help": {
+          "examples": ["help", "assist", "support"],
+          "responses": ["How can I assist you?", "What do you need help with?"]
+        },
+        "time": {
+          "examples": ["what time is it", "tell me the time", "current time", "time now"],
+          "responses": ["The current time is {{time}}.", "It is now {{time}}."]
+        },
+        "goodbye": {
+          "examples": ["bye", "goodbye", "see you later", "take care"],
+          "responses": ["Goodbye! Have a great day!", "See you soon! Take care."]
+        },
+        "joke": {
+          "examples": ["tell me a joke", "make me laugh", "tell a joke"],
+          "responses": [
+            "Why don’t skeletons fight each other? They don’t have the guts!",
+            "Why did the scarecrow win an award? Because he was outstanding in his field!"
+          ]
+        },
+        "news": {
+          "examples": ["latest news", "tell me the news", "what's happening", "headlines"],
+          "responses": ["Here's the latest news: [insert news headline].", "Stay updated with the latest news: [insert news headline]."]
+        },
+        "thank_you": {
+          "examples": ["thank you", "thanks", "appreciate it", "thanks a lot"],
+          "responses": ["You're welcome!", "No problem, happy to help!", "Anytime!"]
+        },
+        "location": {
+          "examples": ["where are you located?", "where is your office?", "what's your location?"],
+          "responses": ["I am an AI assistant and do not have a physical location.", "I exist in the cloud, ready to help you from anywhere!"]
+        },
+        "default": {
+          "examples": ["", "unknown query"],
+          "responses": ["Sorry, I didn't understand that. Could you try again?", "I'm not sure how to respond to that."]
+        }
+      
+      
+  }
+  
