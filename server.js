@@ -5,6 +5,7 @@ const userRoutes = require('./routes/UserRoutes');
 const cors = require('cors'); // Import CORS for cross-origin resource sharing
 const { protect } = require('./middlewares/authMiddleware'); // Import authentication middleware
 require('dotenv').config(); // Load environment variables from .env file
+const authRoutes = require('./routes/authRoute'); // Import auth routes
 
 const app = express();
 const PORT = 3000;
@@ -18,6 +19,7 @@ app.use('/api/chat-history', chatHistoryRoutes); // Use chat history routes
 app.use('/api/users', userRoutes); // Use user routes
 
 // Test DB connection and sync models
+app.use('/auth', authRoutes);
 
 
 // In server.js or an init file

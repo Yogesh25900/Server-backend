@@ -61,35 +61,45 @@ const deleteUser = async (req, res) => {
 
 
 // Utility to generate JWT token
-
-
-
 const createUser = async (req, res) => {
-    const { email, password, name, address, profilePicture, roleID } = req.body; // Destructure necessary fields from request body
+  const { email, password, name, address, profilePicture, roleID } = req.body;
 
-    try {
-        // Hash the password before saving it to the database
+  try {
+ 
+      // Create the new user with the hashed password
+      const newUser = await User.create({
+          name,
+          email,
+          password: password,
+          address,
+          profilePicture,
+          roleID,
+      });
 
-        // Create the new user with the hashed password
-        const newUser = await User.create({
-            name,
+      // Send success response
+      res.status(201).json({
+          message: 'User created successfully',
+          user: newUser,
+      });
+  } catch (error) {
+    if (error.name === 'SequelizeValidationError') {
+      // Extract and customize validation error messages
+      const errors = error.errors.map((err) => {
+          if (err.validatorKey === 'isEmail') {
+              return 'Please provide a valid email address.';
+          }
+          return err.message; // Fallback for other validation errors
+      });
+      return res.status(400).json({ message: errors.join(', ') });
+  }
+      // Handle unique constraint errors for email
+      if (error.name === 'SequelizeUniqueConstraintError') {
+          return res.status(400).json({ message: 'Email already exists' });
+      }
 
-            email,
-            password,
-            address,
-            profilePicture,
-            roleID,
-        });
-
-        // Send success response
-        res.status(201).json({
-            message: 'User created successfully',
-            user: newUser,
-        });
-    } catch (error) {
-        // Handle errors
-        res.status(400).json({ error: error.message });
-    }
+      // Handle other errors
+      res.status(500).json({ error: error.message });
+  }
 };
 
 
@@ -98,65 +108,53 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ where: { email } });
+    // Check if both email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({
+        message: 'Email and password are required.',
+      });
+    }
 
+    // Check if email is already registered (you can also modify this logic depending on your requirement)
+    const user = await User.findOne({
+      where: { email },
+      attributes: ['userID', 'password', 'name'], // Include userID
+    });
+    // If the user is not found (email doesn't exist)
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({
+        message: 'User not found. Please check your email and try again.',
+      });
     }
 
-    const isPasswordMatch = await comparePassword(password, user.password); // Compare hashed password
+    // If email exists, verify the password
+    const isPasswordMatch = await comparePassword(password, user.password);
     if (!isPasswordMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({
+        message: 'Invalid credentials. Please check your password and try again.',
+      });
     }
 
-    const token = generateToken(user.id);
-    res.status(200).json({ message: 'Login successful', token });
+    // Generate a token
+    console.log(user.userID)
+    const token = generateToken(user.userID);
+
+    // Respond with success
+    return res.status(200).json({
+      message: 'Login successful',
+      token,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    // Handle unexpected server errors
+    return res.status(500).json({
+      message: 'An unexpected error occurred. Please try again later.',
+      error: err.message,
+    });
   }
 };
 
-// Middleware to protect routes (Authorization)
-const protect = async (req, res, next) => {
-    const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
-    
-    if (!token) {
-      return res.status(401).json({ message: 'No token, authorization denied' });
-    }
-  
-    try {
-      // Decode the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET); // Ensure JWT_SECRET is set
-      req.user = decoded.user; // Attach user data to request object
-      next(); // Call the next middleware or route handler
-    } catch (err) {
-      res.status(401).json({ message: 'Token is not valid' });
-    }
-  };
 
 
-
-  const profile = async (req, res) => {
-    try {
-      const userId = req.user.id; // Assuming that the user ID is in the token payload
-      const user = await User.findByPk(userId); // Fetch user details by ID (you can customize this logic)
-  
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-  
-      // Send the user details
-      res.status(200).json({
-        id: user.userID ,
-        name: user.name,
-        email: user.email,
-       
-      });
-    } catch (error) {
-      res.status(500).json({ message: 'Server error' });
-    }
-  };
-  
 
 module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,
- login, protect,profile };
+ login };
