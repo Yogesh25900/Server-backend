@@ -12,5 +12,13 @@ const sequelize = new Sequelize(
     logging: false, // Disable SQL query logging (optional)
   }
 );
+// async function connectToDatabase() {
+//   try {
+//     await sequelize.authenticate(); // Sequelize method to test connection
+//     console.log('Database connected!');
+//   } catch (error) {
+//     console.error('Error connecting to the database:', error);
+//   }
+// }
 
-module.exports = sequelize;
+module.exports = { sequelize };

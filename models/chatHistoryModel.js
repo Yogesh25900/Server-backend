@@ -1,5 +1,6 @@
-const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('../db/db'); // Import Sequelize instance
+const { sequelize } = require('../db/db.js')
+const { DataTypes } = require('sequelize');
+
 
 // Define the ChatHistory model
 const ChatHistory = sequelize.define('ChatHistory', {
