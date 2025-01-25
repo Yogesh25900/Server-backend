@@ -1,6 +1,6 @@
 const User  = require('../models/UserModel');
 const { generateToken } = require('../helpers/jwtUtils'); // JWT helper
-const { hashPassword, comparePassword } = require('../helpers/bcryptUtils'); // Bcrypt helper
+const {  comparePassword } = require('../helpers/bcryptUtils'); // Bcrypt helper
 
 require('dotenv').config();
 
@@ -142,7 +142,7 @@ const login = async (req, res) => {
     // Respond with success
     return res.status(200).json({
       message: 'Login successful',
-      token,
+      token,user
     });
   } catch (err) {
     // Handle unexpected server errors

@@ -4,8 +4,9 @@ const { protect } = require('../middlewares/authMiddleware'); // Protect middlew
 
 const router = express.Router();
 
+
 // Get user profile (protected route)
-router.get('/profile', protect, async (req, res) => {
+router.get('/fetch-profile', protect, async (req, res) => {
   try {
     const userId = req.user.id; // `req.user` contains the decoded token with the user ID
 
