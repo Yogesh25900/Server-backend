@@ -5,21 +5,28 @@ const userRoutes = require('./routes/UserRoutes');
 const cors = require('cors'); // Import CORS for cross-origin resource sharing
 const { protect } = require('./middlewares/authMiddleware'); // Import authentication middleware
 require('dotenv').config(); // Load environment variables from .env file
-const authRoutes = require('./routes/authRoute'); // Import auth routes
+const protectedRoutes = require('./routes/protectedRoutes'); // Import auth routes
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = 3000;
+app.use(cookieParser()); // This enables `req.cookies`
 
 // Middleware
-app.use(cors()); // Enable CORS for all origins
-app.use(express.json()); // Middleware for parsing JSON
+
+app.use(
+  cors({
+    origin: 'http://localhost:5173', // Replace with your frontend URL
+    credentials: true,
+  })
+);app.use(express.json()); // Middleware for parsing JSON
 
 // Use routes
 app.use('/api/chat-history', chatHistoryRoutes); // Use chat history routes
 app.use('/api/users', userRoutes); // Use user routes
 
 // Test DB connection and sync models
-app.use('/auth', authRoutes);
+app.use('/auth', protectedRoutes);
 
 
 // In server.js or an init file

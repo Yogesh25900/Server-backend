@@ -6,15 +6,28 @@ require('dotenv').config();
 
 
 
-// Get all users
+// Assuming you're using Sequelize for pagination
 const getAllUsers = async (req, res) => {
-    try {
-        const users = await User.findAll();
-        res.status(200).json(users);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+  try {
+    const { page = 1, limit = 5 } = req.query; // Default to page 1, 5 users per page
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await User.findAndCountAll({
+      limit: parseInt(limit),
+      offset: parseInt(offset),
+      order: [['createdAt', 'DESC']], // Order by `createdAt` in descending order
+    });
+
+    res.status(200).json({
+      users: rows, // The actual users for the page
+      totalUsers: count, // Total number of users for pagination calculation
+    });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: error.message });
+  }
 };
+
 
 // Get a single user by ID
 const getUserById = async (req, res) => {
@@ -108,51 +121,39 @@ const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Check if both email and password are provided
     if (!email || !password) {
-      return res.status(400).json({
-        message: 'Email and password are required.',
-      });
+      return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    // Check if email is already registered (you can also modify this logic depending on your requirement)
     const user = await User.findOne({
       where: { email },
-      attributes: ['userID', 'password', 'name'], // Include userID
+      attributes: ['userID', 'password', 'name'],
     });
-    // If the user is not found (email doesn't exist)
+
     if (!user) {
-      return res.status(404).json({
-        message: 'User not found. Please check your email and try again.',
-      });
+      return res.status(404).json({ message: 'User not found. Please check your email and try again.' });
     }
 
-    // If email exists, verify the password
     const isPasswordMatch = await comparePassword(password, user.password);
     if (!isPasswordMatch) {
-      return res.status(401).json({
-        message: 'Invalid credentials. Please check your password and try again.',
-      });
+      return res.status(401).json({ message: 'Invalid credentials. Please check your password and try again.' });
     }
 
-    // Generate a token
-    console.log(user.userID)
     const token = generateToken(user.userID);
 
-    // Respond with success
-    return res.status(200).json({
-      message: 'Login successful',
-      token,user
+    res.cookie('authToken', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 3600000,
     });
+
+    console.log('Cookies sent:', req.cookies); // This will work after cookie-parser is set up
+    return res.status(200).json({ message: 'Login successful', token });
   } catch (err) {
-    // Handle unexpected server errors
-    return res.status(500).json({
-      message: 'An unexpected error occurred. Please try again later.',
-      error: err.message,
-    });
+    return res.status(500).json({ message: 'An unexpected error occurred.', error: err.message });
   }
 };
-
 
 
 
