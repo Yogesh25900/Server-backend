@@ -3,10 +3,6 @@ const { generateToken } = require('../helpers/jwtUtils'); // JWT helper
 const {  comparePassword } = require('../helpers/bcryptUtils'); // Bcrypt helper
 
 require('dotenv').config();
-
-
-
-// Assuming you're using Sequelize for pagination
 const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 5 } = req.query; // Default to page 1, 5 users per page
@@ -27,7 +23,6 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 
 // Get a single user by ID
 const getUserById = async (req, res) => {
@@ -68,6 +63,10 @@ const deleteUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+
+
 
 
 
@@ -148,7 +147,6 @@ const login = async (req, res) => {
       maxAge: 3600000,
     });
 
-    console.log('Cookies sent:', req.cookies); // This will work after cookie-parser is set up
     return res.status(200).json({ message: 'Login successful', token });
   } catch (err) {
     return res.status(500).json({ message: 'An unexpected error occurred.', error: err.message });
@@ -157,5 +155,30 @@ const login = async (req, res) => {
 
 
 
-module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,
+// Get user details controller
+const getUserDetails = async (req, res) => {
+  try {
+    const userId = req.params.id; // Access the userId from the token's decoded payload
+
+    // Fetch user details from the database
+    const user = await User.findOne({
+      where: { userID: userId },
+      attributes: ['userID', 'name', 'email', 'address', 'profilePicture','mobileNumber'], // Only fetch necessary fields
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Send user details as response
+    res.status(200).json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong' });
+  }
+};
+
+
+
+module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,getUserDetails,
  login };

@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 
 const verifyToken  = async (req, res, next) => {
-  const token = req.cookies?.authToken; // Get token from cookies
+  const token = req.cookies?.authToken || req.headers.authorization?.split(' ')[1];
 
 
   if (!token) {
@@ -14,7 +14,7 @@ const verifyToken  = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log("Decoded Payload:", decoded); // Check the type of `id`
     req.user = decoded; // Attach the decoded payload to the request
-    res.status(200).json({ message:"TOken successfully verified" });
+    return res.status(200).json({ userId: decoded.id }); // Send userId back in response
     next();
 
     return user; // Return

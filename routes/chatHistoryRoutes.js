@@ -1,17 +1,15 @@
 const express = require('express');
+
+const router = express.Router();
 const {
   saveChatHistoryController,
   getChatHistoryController,
   deleteChatHistoryController,
 } = require('../controllers/chatHistoryController');
 
-const router = express.Router();
+router.post('/save-chat', saveChatHistoryController);
+router.get('/get-chat', getChatHistoryController);
+router.delete('/chat/:queryid', deleteChatHistoryController);
 
-// Route to save chat history
-router.post('/save-chat-history', saveChatHistoryController);
-
-// Route to get all chat history
-router.get('/get-chat-history', getChatHistoryController);
-router.delete('/delete-chat-history/:id', deleteChatHistoryController);
 
 module.exports = router;

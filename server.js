@@ -7,6 +7,8 @@ const { protect } = require('./middlewares/authMiddleware'); // Import authentic
 require('dotenv').config(); // Load environment variables from .env file
 const protectedRoutes = require('./routes/protectedRoutes'); // Import auth routes
 const cookieParser = require('cookie-parser');
+const path = require('path');
+const uploadRoute = require('./routes/uploadRoute'); // Import the upload route
 
 const app = express();
 const PORT = 3000;
@@ -21,12 +23,19 @@ app.use(
   })
 );app.use(express.json()); // Middleware for parsing JSON
 
+
 // Use routes
 app.use('/api/chat-history', chatHistoryRoutes); // Use chat history routes
 app.use('/api/users', userRoutes); // Use user routes
 
 // Test DB connection and sync models
 app.use('/auth', protectedRoutes);
+
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api', uploadRoute); // All upload endpoints will be under '/api'
+
 
 
 // In server.js or an init file

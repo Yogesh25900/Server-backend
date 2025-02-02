@@ -176,11 +176,11 @@ async function generateAssistantReply(userQuery) {
 }
 
 // Example usage
-async function exampleUsage() {
-  const userQuery = 'albert einstein';  // Example query
-  const response = await searchWikipedia(userQuery);
-  console.log('Wikipedia Search Result:', response);
-}
+// async function exampleUsage() {
+//   const userQuery = 'albert einstein';  // Example query
+//   const response = await searchWikipedia(userQuery);
+//   console.log('Wikipedia Search Result:', response);
+// }
 
 
 // generateAssistantReply("time")
