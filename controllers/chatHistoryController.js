@@ -38,7 +38,11 @@ const saveChatHistoryController = async (req, res) => {
 const getChatHistoryController = async (req, res) => {
   try {
     // Fetch all queries along with their associated responses
+    const { userid } = req.body; // Assuming the userid is passed in the URL as a parameter
+
     const chatHistory = await Query.findAll({
+      where: { userid }, // Filter by the specific userid
+
       include: [
         {
           model: Response,  // Include the Response model
