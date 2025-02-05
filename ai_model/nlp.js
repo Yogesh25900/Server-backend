@@ -3,6 +3,7 @@ const { NlpManager } = require('node-nlp');  // For advanced NLP tasks like inte
 const nlp = require('compromise');  // For text parsing and named entity extraction
 const natural = require('natural');  // For basic NLP tasks like tokenization
 const path = require('path');
+const taskController = require('../controllers/taskController');  // Import the task controller
 
 const wiki = require('wikijs').default;  // Import the wikijs library
 
@@ -24,6 +25,25 @@ try {
   process.exit(1);  // Exit the process if the file read fails
 }
 
+
+// Function to write JSON file
+function writeData(data) {
+  try {
+      fs.writeFileSync("ai_model/data.json", JSON.stringify(data, null, 2), "utf8");
+  } catch (error) {
+      console.error("Error writing to data.json:", error);
+  }
+}
+
+function readData() {
+  try {
+      const data = fs.readFileSync("ai_model/data.json", "utf8");
+      return JSON.parse(data);
+  } catch (error) {
+      console.error("Error reading data.json:", error);
+      return { conversationState: {}, taskDetails: {} };
+  }
+}
 // Load intents and responses into the NLP manager
 function loadIntents() {
   for (let intent in intents) {
@@ -89,9 +109,68 @@ async function matchIntent(text) {
   return finalResponse || "Sorry, I didn't understand that.";
 }
 
-// Main function to handle user queries
 
-async function handleUserQuery(userQuery) {
+async function handleTaskQueries(userID, userQuery) {
+  let data = readData();  // Load existing data
+  let conversationState = data.conversationState[userID] || "idle";
+  let taskDetails = data.taskDetails[userID] || {};
+
+  if (userQuery.toLowerCase().includes("add task") && conversationState === 'idle') {
+      conversationState = 'creating_task_name';
+      data.conversationState[userID] = conversationState;
+      writeData(data);
+      return "Got it! What should we call this task?";
+  }
+
+  if (conversationState === 'creating_task_name') {
+      taskDetails.taskName = userQuery;
+      conversationState = 'creating_task_description';
+      data.conversationState[userID] = conversationState;
+      data.taskDetails[userID] = taskDetails;
+      writeData(data);
+      return "Great! Could you please describe the task in detail?";
+  }
+
+  if (conversationState === 'creating_task_description') {
+      taskDetails.taskDescription = userQuery;
+      conversationState = 'creating_task_due_date';
+      data.conversationState[userID] = conversationState;
+      data.taskDetails[userID] = taskDetails;
+      writeData(data);
+      return "Noted! When is the due date for this task?";
+  }
+
+  if (conversationState === 'creating_task_due_date') {
+      taskDetails.dueDate = userQuery;
+      conversationState = 'confirming_task';
+      data.conversationState[userID] = conversationState;
+      data.taskDetails[userID] = taskDetails;
+      writeData(data);
+      return `Here's what I have:\n📌 Task: ${taskDetails.taskName}\n📝 Description: ${taskDetails.taskDescription}\n📅 Due Date: ${taskDetails.dueDate}\n\nIs this correct? (Yes/No)`;
+  }
+
+  if (conversationState === 'confirming_task') {
+      if (userQuery.toLowerCase() === 'yes') {
+          data.conversationState[userID] = 'idle';
+          delete data.taskDetails[userID];  // Remove task after saving
+          writeData(data);
+          return "✅ Task added successfully!";
+      } else if (userQuery.toLowerCase() === 'no') {
+          data.conversationState[userID] = 'idle';
+          delete data.taskDetails[userID];
+          writeData(data);
+          return "Task addition canceled. Let me know if you want to add something else!";
+      } else {
+          return "Please reply with 'Yes' to confirm or 'No' to cancel.";
+      }
+  }
+
+  return "I didn’t understand that. Please continue where we left off.";
+}
+
+
+
+async function handleUserQuery(userID, userQuery) {
   console.log('User Query:', userQuery);
 
   // Preprocess the text
@@ -101,11 +180,31 @@ async function handleUserQuery(userQuery) {
   // Extract named entities
   const entities = extractEntities(userQuery);
   console.log('Extracted Entities:', entities);
+  // console.log('Conversation State:', conversationState);
 
-  // Check if the query includes "wikipedia" and process accordingly
+  let data = readData();  
+  let conversationState = data.conversationState[userID] || "idle";
+
+  const validStates = ['confirming_task', 'creating_task_name', 'creating_task_description', 'creating_task_due_date'];
+
+  // Initialize the user state if not already done
+  if (validStates.includes(conversationState) || userQuery.toLowerCase().includes("add task")) {
+    const taskResponse = await handleTaskQueries(userID, userQuery);
+
+    let data = readData();  
+    let newconversationState = data.conversationState[userID] || "idle";
+  
+    console.log('Conversation State:', newconversationState);
+    console.log('Task Response:', taskResponse);
+    if (taskResponse){
+       return taskResponse;
+      }
+  }
+
+
+  // Check if the query includes "wikipedia"
   if (userQuery.toLowerCase().includes('wikipedia')) {
     try {
-      // Search Wikipedia
       const wikipediaResult = await searchWikipedia(userQuery);
       console.log('Wikipedia Result:', wikipediaResult);
       return wikipediaResult;
@@ -115,22 +214,13 @@ async function handleUserQuery(userQuery) {
     }
   }
 
-  // Check if the query includes "google" and process accordingly
- 
-
-  // If neither Wikipedia nor Google is in the query, process with NLP intent matching
-  else {
-    try {
-      const response = await matchIntent(userQuery);
-      console.log('Bot Response:', response);
-      return response || "Sorry, I didn't understand that.";
-    } catch (error) {
-      console.error('Error processing NLP intent:', error);
-      return "Sorry, there was an issue processing your query.";
-    }
-  }
+  // Process NLP intent matching if not in task creation mode
+  else{
+    const response = await matchIntent(userQuery);
+    console.log('Bot Response:', response);
+    return response || "Sorry, I didn't understand that.";
+  } 
 }
-
 
 
 async function searchWikipedia(query) {
@@ -159,7 +249,7 @@ async function searchWikipedia(query) {
 }
 
 // Function to generate assistant reply
-async function generateAssistantReply(userQuery) {
+async function generateAssistantReply(userID,userQuery) {
   if (!userQuery) {
     return "User query is required.";
   }
@@ -171,7 +261,7 @@ async function generateAssistantReply(userQuery) {
   await trainModel();
 
   // Handle the user query and return the response
-  const response = await handleUserQuery(userQuery);
+  const response = await handleUserQuery(userID,userQuery);
   return response;
 }
 
@@ -183,7 +273,7 @@ async function generateAssistantReply(userQuery) {
 // }
 
 
-// generateAssistantReply("time")
+// generateAssistantReply(19,"give me a joke");
 // exampleUsage();  // Run example usage to test the function
 
 // Export the generateAssistantReply function for external use
