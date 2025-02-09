@@ -4,6 +4,8 @@ const nlp = require('compromise');  // For text parsing and named entity extract
 const natural = require('natural');  // For basic NLP tasks like tokenization
 const path = require('path');
 const taskController = require('../controllers/taskController');  // Import the task controller
+const Task = require('../models/taskModel');
+const { response } = require('express');
 
 const wiki = require('wikijs').default;  // Import the wikijs library
 
@@ -94,6 +96,22 @@ function replaceDynamicPlaceholders(response) {
   return response.replace('{{date}}', date).replace('{{time}}', time);
 }
 
+
+const createTaskForUser = async (userID, taskName, taskDescription,status, dueDate) => {
+  try {
+    const task = await Task.create({
+      userID,
+      taskName,
+      taskDescription,
+      status,
+      dueDate
+    });
+    return task;  // Return the created task object
+  } catch (error) {
+    console.log('Error creating task:', error);
+    return null;
+  }
+};
 // Match the intent using node-nlp
 async function matchIntent(text) {
   const response = await manager.process('en', text);
@@ -152,8 +170,21 @@ async function handleTaskQueries(userID, userQuery) {
   if (conversationState === 'confirming_task') {
       if (userQuery.toLowerCase() === 'yes') {
           data.conversationState[userID] = 'idle';
-          delete data.taskDetails[userID];  // Remove task after saving
           writeData(data);
+          const taskDetails = data.taskDetails[userID];
+          console.log(taskDetails.taskName); 
+          const status = "Pending";
+          const currentDate = new Date();
+    const defaultDueDate = new Date(currentDate.setDate(currentDate.getDate() + 1)).toISOString().split('T')[0];  // Format to 'YYYY-MM-DD'
+
+    // Use the provided dueDate if available, otherwise, use the default one
+
+          const response = await taskController.createTaskforApi(userID,taskDetails.taskName,taskDetails.taskDescription,status,defaultDueDate
+          )
+          console.log(response)
+
+             delete data.taskDetails[userID];  // Remove task after saving
+
           return "✅ Task added successfully!";
       } else if (userQuery.toLowerCase() === 'no') {
           data.conversationState[userID] = 'idle';
