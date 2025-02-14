@@ -9,7 +9,11 @@ const protectedRoutes = require('./routes/protectedRoutes'); // Import auth rout
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const uploadRoute = require('./routes/uploadRoute'); // Import the upload route
+const currencyRoutes = require('./routes/currencyRoutes'); // Import the currency');
 
+// Use the currency routes
+const taskRoutes = require('./routes/taskRoutes');
+const weatherRoutes = require('./routes/weatherRoutes');
 const app = express();
 const PORT = 3000;
 app.use(cookieParser()); // This enables `req.cookies`
@@ -23,6 +27,10 @@ app.use(
   })
 );app.use(express.json()); // Middleware for parsing JSON
 
+app.use("/api/weather", weatherRoutes); // Weather API route
+
+
+app.use('/api/currency', currencyRoutes);
 
 // Use routes
 app.use('/api/chat-history', chatHistoryRoutes); // Use chat history routes
@@ -36,6 +44,7 @@ app.use('/auth', protectedRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', uploadRoute); // All upload endpoints will be under '/api'
 
+app.use('/api/tasks', taskRoutes);
 
 
 // In server.js or an init file
