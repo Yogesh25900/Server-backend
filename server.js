@@ -10,6 +10,7 @@ const cookieParser = require('cookie-parser');
 const path = require('path');
 const uploadRoute = require('./routes/uploadRoute'); // Import the upload route
 const currencyRoutes = require('./routes/currencyRoutes'); // Import the currency');
+const feedbackRoutes = require('./routes/feedbackRoutes');
 
 // Use the currency routes
 const taskRoutes = require('./routes/taskRoutes');
@@ -19,7 +20,6 @@ const PORT = 3000;
 app.use(cookieParser()); // This enables `req.cookies`
 
 // Middleware
-
 app.use(
   cors({
     origin: 'http://localhost:5173', // Replace with your frontend URL
@@ -45,6 +45,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', uploadRoute); // All upload endpoints will be under '/api'
 
 app.use('/api/tasks', taskRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 
 // In server.js or an init file
