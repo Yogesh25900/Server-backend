@@ -5,7 +5,6 @@ const natural = require('natural');  // For basic NLP tasks like tokenization
 const path = require('path');
 const taskController = require('../controllers/taskController');  // Import the task controller
 const Task = require('../models/taskModel');
-const { response } = require('express');
 
 const wiki = require('wikijs').default;  // Import the wikijs library
 
@@ -97,21 +96,6 @@ function replaceDynamicPlaceholders(response) {
 }
 
 
-const createTaskForUser = async (userID, taskName, taskDescription,status, dueDate) => {
-  try {
-    const task = await Task.create({
-      userID,
-      taskName,
-      taskDescription,
-      status,
-      dueDate
-    });
-    return task;  // Return the created task object
-  } catch (error) {
-    console.log('Error creating task:', error);
-    return null;
-  }
-};
 // Match the intent using node-nlp
 async function matchIntent(text) {
   const response = await manager.process('en', text);
@@ -200,6 +184,7 @@ async function handleTaskQueries(userID, userQuery) {
 }
 
 
+let waitingForSummary = false;  // Track whether we're waiting for the summary text
 
 async function handleUserQuery(userID, userQuery) {
   console.log('User Query:', userQuery);
@@ -233,6 +218,19 @@ async function handleUserQuery(userID, userQuery) {
   }
 
 
+  if (waitingForSummary) {
+    const summary = await summarizeText(userQuery);  // Call the summarization function
+    console.log('Summarized Text:', summary);
+    waitingForSummary = false;  // Reset the waiting state
+    return summary;  // Return the summary to the user
+  }
+
+  // Check if the query includes "summarize" or "summary"
+  if (userQuery.toLowerCase().includes('summarize') || userQuery.toLowerCase().includes('summary')) {
+    // Set the state to waiting for the content to summarize
+    waitingForSummary = true;
+    return "Please provide the text you want to summarize.";  // Ask the user for the text
+  }
   // Check if the query includes "wikipedia"
   if (userQuery.toLowerCase().includes('wikipedia')) {
     try {
@@ -252,6 +250,8 @@ async function handleUserQuery(userID, userQuery) {
     return response || "Sorry, I didn't understand that.";
   } 
 }
+
+
 
 
 async function searchWikipedia(query) {
@@ -308,6 +308,16 @@ async function generateAssistantReply(userID,userQuery) {
 // exampleUsage();  // Run example usage to test the function
 
 // Export the generateAssistantReply function for external use
+
+const TextSummarizer = require('../services/TextSummarizer ');
+
+async function summarizeText(userQuery) {
+  const summarizer = new TextSummarizer();  // Create an instance of the TextSummarizer service
+  const result = await summarizer.summarizeText(userQuery);
+  return result.data.summary;  // Return the summary
+}
+
+
 module.exports = {
   generateAssistantReply,
 };
