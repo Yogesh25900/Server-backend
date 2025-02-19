@@ -1,6 +1,7 @@
 const User  = require('../models/UserModel');
 const { generateToken } = require('../helpers/jwtUtils'); // JWT helper
 const {  comparePassword } = require('../helpers/bcryptUtils'); // Bcrypt helper
+const { Op } = require('sequelize');  // Import Op for Sequelize operators
 
 require('dotenv').config();
 const getAllUsers = async (req, res) => {
@@ -45,7 +46,7 @@ const updateUser = async (req, res) => {
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         await user.update(req.body);
-        res.status(200).json(user);
+        res.status(200).json("details upated successfully");
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -72,9 +73,10 @@ const deleteUser = async (req, res) => {
 
 
 
+
 // Utility to generate JWT token
 const createUser = async (req, res) => {
-  const { email, password, name, address, profilePicture, roleID } = req.body;
+  const { name,email, password } = req.body;
 
   try {
  
@@ -83,9 +85,8 @@ const createUser = async (req, res) => {
           name,
           email,
           password: password,
-          address,
-          profilePicture,
-          roleID,
+          
+          roleID:1,
       });
 
       // Send success response
@@ -178,7 +179,43 @@ const getUserDetails = async (req, res) => {
   }
 };
 
+// Get a single user by name
 
 
-module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,getUserDetails,
+const getUserByName = async (req, res) => {
+  try {
+    const { name } = req.params; // Get the name from the request parameters
+
+    // Search for users by name (case-insensitive) or if the first letter matches
+    const { rows, count } = await User.findAndCountAll({
+      where: {
+        [Op.or]: [
+          // Match if the name starts with the given name (case-insensitive)
+          { name: { [Op.iLike]: `%${name}%` } },
+          // Match if the name starts with the first letter of the given name (case-insensitive)
+          { name: { [Op.iLike]: `${name[0]}%` } }
+        ]
+      }
+    });
+
+    if (count === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Return users and total user count
+    res.status(200).json({
+      users: rows, // The actual users matching the name query
+      totalUsers: count, // Total number of users for pagination or further use
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
+
+
+
+module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,getUserDetails,getUserByName,
  login };
