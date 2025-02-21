@@ -11,6 +11,7 @@ const path = require('path');
 const uploadRoute = require('./routes/uploadRoute'); // Import the upload route
 const currencyRoutes = require('./routes/currencyRoutes'); // Import the currency');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const authRoutes = require("./routes/authRoutes");
 
 // Use the currency routes
 const taskRoutes = require('./routes/taskRoutes');
@@ -39,6 +40,7 @@ app.use('/api/users', userRoutes); // Use user routes
 // Test DB connection and sync models
 app.use('/auth', protectedRoutes);
 
+app.use("/email", authRoutes);
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
