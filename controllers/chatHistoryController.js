@@ -4,21 +4,21 @@ const { generateAssistantReply } = require('../ai_model/nlp');
 
 // Save User Query and Assistant Response
 const saveChatHistoryController = async (req, res) => {
-  const { userid, querytext } = req.body;
+  const { userID, querytext } = req.body;
 
-  if (!userid || !querytext) {
+  if (!userID || !querytext) {
     return res.status(400).json({ error: 'User ID and query text are required' });
   }
 
   try {
     // Save the user's query
     const queryEntry = await Query.create({
-      userid,
+      userID,
       querytext,
     });
 
     // Generate Assistant's Response
-    const assistantReply = await generateAssistantReply(querytext);
+    const assistantReply = await generateAssistantReply(userID,querytext);
 
     // Save response linked to the query
     const responseEntry = await Response.create({
@@ -37,28 +37,45 @@ const saveChatHistoryController = async (req, res) => {
 // Get All Chat History with Responses
 const getChatHistoryController = async (req, res) => {
   try {
-    // Fetch all queries along with their associated responses
-    const { userid } = req.body; // Assuming the userid is passed in the URL as a parameter
+    const { userID } = req.body;
 
     const chatHistory = await Query.findAll({
-      where: { userid }, // Filter by the specific userid
-
+      where: { userID },
       include: [
         {
-          model: Response,  // Include the Response model
-          as: 'response',   // Alias (optional but helps if you use associations)
-          required: false,   // This ensures that we still get queries even without responses
+          model: Response,
+          as: 'response',
+          required: false,
         }
-      ]
+      ],
     });
 
-    // Send the chat history data
-    res.json(chatHistory);
+    // Transform the response to { query: {}, response: {} }
+    const formattedChatHistory = chatHistory.map(chat => ({
+      query: {
+        queryid: chat.queryid,
+        userID: chat.userID,
+        querytext: chat.querytext,
+        createdAt: chat.createdAt,
+        updatedAt: chat.updatedAt
+      },
+      response: chat.response ? { 
+        responseid: chat.response.responseid,
+        queryid: chat.response.queryid,
+        responsetext: chat.response.responsetext,
+        responsetime: chat.response.responsetime,
+        createdAt: chat.response.createdAt,
+        updatedAt: chat.response.updatedAt
+      } : null
+    }));
+
+    res.json(formattedChatHistory);
   } catch (error) {
     console.error("Error fetching chat history:", error);
     res.status(500).json({ error: 'Failed to fetch chat history' });
   }
 };
+
 
 // Delete Chat History by Query ID (Cascade deletes response)
 const deleteChatHistoryController = async (req, res) => {

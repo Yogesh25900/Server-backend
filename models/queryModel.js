@@ -6,7 +6,7 @@ const { DataTypes } = require('sequelize');
         primaryKey: true,
         autoIncrement: true,
       },
-      userid: {
+      userID: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
@@ -18,7 +18,6 @@ const { DataTypes } = require('sequelize');
     }, {
       tableName: 'query',
       timestamps: true,
-      underscored: true,
     });
     Query.associate = (models) => {
         // Correct association: Query hasMany Responses

@@ -1,4 +1,5 @@
 const User  = require('../models/UserModel');
+const UserStats = require('../models/UserStats');
 const { generateToken } = require('../helpers/jwtUtils'); // JWT helper
 const {  comparePassword } = require('../helpers/bcryptUtils'); // Bcrypt helper
 const { Op } = require('sequelize');  // Import Op for Sequelize operators
@@ -127,7 +128,7 @@ const login = async (req, res) => {
 
     const user = await User.findOne({
       where: { email },
-      attributes: ['userID', 'password', 'name'],
+      attributes: ['userID', 'password', 'name','roleID'],
     });
 
     if (!user) {
@@ -136,6 +137,7 @@ const login = async (req, res) => {
 
     const isPasswordMatch = await comparePassword(password, user.password);
     if (!isPasswordMatch) {
+      console.log('Password mismatch')
       return res.status(401).json({ message: 'Invalid credentials. Please check your password and try again.' });
     }
 
@@ -148,7 +150,16 @@ const login = async (req, res) => {
       maxAge: 3600000,
     });
 
-    return res.status(200).json({ message: 'Login successful', token });
+    res.cookie('role', user.roleID, {
+      httpOnly: false, // Accessible from frontend
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'Strict',
+      maxAge: 3600000,
+    });
+
+
+    return res.status(200).json({ message: 'Login successful', token, roleID: user.roleID  // Send roleID in response
+    });
   } catch (err) {
     return res.status(500).json({ message: 'An unexpected error occurred.', error: err.message });
   }
@@ -215,7 +226,89 @@ const getUserByName = async (req, res) => {
 
 
 
+// Update password with reset code
+const resetPassword = async (req, res) => {
+  const { email,newPassword } = req.body;
+
+  try {
+  
+
+    // Find the user by email
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Hash the new password before saving it
+    // const hashedPassword = await bcrypt.hash(newPassword, 10);
+    //no need cause password hashing logic is implemented inside the beforeUpdate hook of the User model
+
+    // Update the user's password in the database
+    user.password = newPassword;
+    await user.save();
+
+    // Optionally, delete the reset request after password reset
+
+    res.status(200).json({ 
+      success:true,
+      message: 'Password updated successfully' });
+
+  } catch (error) {
+    console.error('Error updating password:', error);
+    res.status(500).json({ message: 'An error occurred while resetting the password', error: error.message });
+  }
+};
 
 
-module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,getUserDetails,getUserByName,
+
+
+// Route to get total users and percentage increase
+const getTotalUsersCount = async (req, res) => {
+  try {
+    // Fetch the current number of users
+    const currentUserCount = await User.count();
+
+    // Fetch previous user count from a stored location (e.g., database, file, etc.)
+    const previousUserCount = await getPreviousUserCount();  // This function fetches the previous count (store it in DB, cache, or file)
+
+    // Calculate the percentage increase
+    let percentageIncrease = 0;
+
+    if (previousUserCount > 0) {
+      percentageIncrease = ((currentUserCount - previousUserCount) / previousUserCount) * 100;
+    }
+
+    // Save the current user count as the new previous count (for future comparisons)
+    await saveUserCount(currentUserCount);  // This function saves the current count for future comparison
+
+    // Send response
+    res.status(200).json({
+      totalUsers: currentUserCount,
+      percentageIncrease: percentageIncrease.toFixed(2)  // Return percentage increase rounded to 2 decimal places
+    });
+  } catch (error) {
+    console.error('Error fetching total user count or percentage increase:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Function to fetch the previous user count from a persistent store
+const getPreviousUserCount = async () => {
+  // This can fetch the count from a file, database, or cache
+  // Example using a database (you can adapt based on your actual storage)
+  const lastUserStats = await UserStats.findOne({ order: [['createdAt', 'DESC']] });
+  return lastUserStats ? lastUserStats.userCount : 0;  // Default to 0 if no previous data is found
+};
+
+// Function to save the current user count as the previous count
+const saveUserCount = async (userCount) => {
+  // Store the current user count in a persistent store for future comparisons
+  await UserStats.create({ userCount });
+};
+
+module.exports = { getTotalUsersCount };
+
+module.exports = { getAllUsers,getUserById,createUser,updateUser,deleteUser,getUserDetails,getUserByName,resetPassword,
+  getTotalUsersCount,getPreviousUserCount,saveUserCount,
  login };

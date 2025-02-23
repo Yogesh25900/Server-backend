@@ -8,7 +8,7 @@ const {
 } = require('../controllers/chatHistoryController');
 
 router.post('/save-chat', saveChatHistoryController);
-router.get('/get-chat', getChatHistoryController);
+router.post('/get-chat', getChatHistoryController);
 router.delete('/chat/:queryid', deleteChatHistoryController);
 
 

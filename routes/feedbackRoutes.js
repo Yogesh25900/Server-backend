@@ -6,9 +6,10 @@ const feedbackController = require('../controllers/feedbackController');
 router.post('/createfeedback', feedbackController.createFeedback);
 
 // Route to get feedback by user ID
-router.get('/feedback/user/:userID', feedbackController.getFeedbackByUserID);
+router.get('/get-feedback/user/:userID', feedbackController.getFeedbackByUserID);
+router.delete('/delete-feedback/:feedbackID', feedbackController.deleteFeedback);
 
 // Route to get all feedback (admin)
-router.get('/feedback', feedbackController.getAllFeedback);
+router.get('/get-all-feedback', feedbackController.getAllFeedback);
 
 module.exports = router;

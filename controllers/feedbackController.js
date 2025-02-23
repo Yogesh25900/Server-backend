@@ -19,6 +19,7 @@ const createFeedback = async (req, res) => {
     });
 
     return res.status(201).json({
+      success:true,
       message: 'Feedback submitted successfully',
       feedback
     });
@@ -71,8 +72,34 @@ const getAllFeedback = async (req, res) => {
   }
 };
 
+// Delete feedback by ID
+const deleteFeedback = async (req, res) => {
+  try {
+    const { feedbackID } = req.params;
+
+    // Find feedback by ID
+    const feedback = await Feedback.findByPk(feedbackID);
+    
+    if (!feedback) {
+      return res.status(404).json({ message: 'Feedback not found' });
+    }
+
+    // Delete the feedback record
+    await feedback.destroy();
+
+    return res.status(200).json({
+      success:true,
+      message: 'Feedback deleted successfully'
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 module.exports = {
   createFeedback,
   getFeedbackByUserID,
-  getAllFeedback
+  getAllFeedback,
+  deleteFeedback  // Exporting deleteFeedback function
 };

@@ -17,7 +17,10 @@ const sendVerificationEmail = async (req, res) => {
   );
 
   if (emailResponse.success) {
-    res.status(200).json({ message: "Verification email sent!", code });
+    res.status(200).json({ 
+      success:true,
+      message: "Verification email sent!",
+      code });
   } else {
     res.status(500).json({ error: emailResponse.message });
   }
@@ -66,7 +69,9 @@ const verifyCode = async (req, res) => {
 
   // Verification successful
   verificationCodes.delete(email); // Remove code after successful verification
-  res.status(200).json({ message: "Email verified successfully!" });
+  res.status(200).json({
+    success:true,
+     message: "Email verified successfully!" });
 };
 
 module.exports = { sendVerificationEmail, sendForgotPasswordEmail,verifyCode };

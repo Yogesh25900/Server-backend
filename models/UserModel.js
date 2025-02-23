@@ -37,9 +37,11 @@ const User = sequelize.define('Users', {
     },
     address: {
         type: DataTypes.STRING,
+        allowNull: true,
     },
     profilePicture: {
         type: DataTypes.STRING,
+        allowNull: true,
     },
   
     roleID: {
@@ -53,9 +55,11 @@ const User = sequelize.define('Users', {
 
 
 User.beforeCreate(async (user) => {
-    user.password = await hashPassword(user.password, 10);
+    user.password = await hashPassword(user.password);
   });
 // Sync the database
-
+User.beforeUpdate(async (user) => {
+    user.password = await hashPassword(user.password);
+  });
 
 module.exports = User;
