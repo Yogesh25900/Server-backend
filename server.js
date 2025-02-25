@@ -51,15 +51,22 @@ app.use('/api/feedback', feedbackRoutes);
 
 
 // In server.js or an init file
-sequelize.sync()
-  .then(() => {
+const syncDatabase = async () => {
+  try {
+    await sequelize.sync();
     console.log('Database synced successfully.');
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error('Error syncing the database:', error);
-  });
+  }
+};
+
+syncDatabase();
+
 
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+
+module.exports=app;

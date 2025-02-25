@@ -45,23 +45,27 @@ const updateTask = async (req, res) => {
     // Validate incoming data if needed (for example: taskname, due_date, status)
     const { taskname, taskdescription, status, due_date } = req.body;
 
-    // Check for required fields or invalid data (optional, depending on your validation rules)
-    if (!taskname || !status || !due_date) {
-      return res.status(400).json({ error: 'taskname, status, and due_date are required' });
+    // Prepare the update object, only including fields that are provided
+    const updatedFields = {};
+
+    if (taskname) updatedFields.taskname = taskname;
+    if (taskdescription) updatedFields.taskdescription = taskdescription;
+    if (status) updatedFields.status = status;
+    if (due_date) {
+      // Ensure the date format is correct (assuming `due_date` should be in 'yyyy-mm-dd' format)
+      if (isNaN(Date.parse(due_date))) {
+        return res.status(400).json({ error: 'Invalid date format for due_date' });
+      }
+      updatedFields.due_date = due_date;
     }
 
-    // Ensure the date format is correct (assuming `due_date` should be in 'yyyy-mm-dd' format)
-    if (isNaN(Date.parse(due_date))) {
-      return res.status(400).json({ error: 'Invalid date format for due_date' });
+    // If no fields are provided to update, return a 400 error
+    if (Object.keys(updatedFields).length === 0) {
+      return res.status(400).json({ error: 'No fields to update' });
     }
 
     // Update the task with the new details from req.body
-    await task.update({
-      taskname,
-      taskdescription,
-      status,
-      due_date,
-    });
+    await task.update(updatedFields);
 
     // Respond with the updated task or success message
     res.status(200).json({ message: 'Task updated successfully', task });
@@ -74,6 +78,7 @@ const updateTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to update task' });
   }
 };
+
 
 
 // ✅ Delete a task
