@@ -1,7 +1,6 @@
 const request = require('supertest');
 const app = require('../server'); // Make sure this is the entry point to your Express app
 const User = require('../models/UserModel');
-
 // Mocking the database methods used in the routes
 jest.mock('../models/UserModel', () => ({
   findAndCountAll: jest.fn(),

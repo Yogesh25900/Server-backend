@@ -1,14 +1,14 @@
 const sendEmail = require("../services/emailService");
 const generateCode = require("../utils/generateCode");
 const verificationCodes = new Map();  
-console.log(verificationCodes)
+// console.log(verificationCodes)
 
 const sendVerificationEmail = async (req, res) => {
   const { email } = req.body;
   const code = generateCode();
   verificationCodes.set(email, { code:String(code), expiresAt: Date.now() + 10 * 60 * 1000 }); //expires in 10 minutes
 
-  console.log("Verification code saved",verificationCodes);
+  // console.log("Verification code saved",verificationCodes);
 
   const emailResponse = await sendEmail(
     email,

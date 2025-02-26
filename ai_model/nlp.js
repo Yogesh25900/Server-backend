@@ -4,20 +4,13 @@ const nlp = require('compromise');  // For text parsing and named entity extract
 const natural = require('natural');  // For basic NLP tasks like tokenization
 const path = require('path');
 const taskController = require('../controllers/taskController');  // Import the task controller
-const Task = require('../models/taskModel');
-
 const wiki = require('wikijs').default;  // Import the wikijs library
-
-
 // Initialize the NLP Manager for node-nlp
 const manager = new NlpManager({ languages: ['en'] });
-
 // Construct the relative path to intents.json using __dirname
 const intentsPath = path.join(__dirname, 'intents.json');
-
 // Declare `intents` using `let` so it can be reassigned
 let intents;
-
 try {
   // Read and parse the JSON file
   intents = JSON.parse(fs.readFileSync(intentsPath, 'utf8'));
@@ -25,8 +18,6 @@ try {
   console.error("Error reading intents.json:", error);
   process.exit(1);  // Exit the process if the file read fails
 }
-
-
 // Function to write JSON file
 function writeData(data) {
   try {

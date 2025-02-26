@@ -1,8 +1,6 @@
 const { sequelize } = require('../db/db.js')
 const { DataTypes } = require('sequelize');
 const { hashPassword } = require('../helpers/bcryptUtils.js');
-
-
 const User = sequelize.define('Users', {
     userID: {
         type: DataTypes.INTEGER,
@@ -21,7 +19,6 @@ const User = sequelize.define('Users', {
             isEmail: true,  // Ensures the value is a valid email
         },
     },
-
     mobileNumber: {
         type: DataTypes.STRING(15), // Mobile number column
         allowNull: true,  // Set to `false` if required

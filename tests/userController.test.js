@@ -127,14 +127,11 @@ describe('User Controller', () => {
     User.findOne.mockResolvedValue(mockUser);
     comparePassword.mockResolvedValue(true); // Simulate correct password
     generateToken.mockReturnValue('mocked_token');
-
-    await login(req, res);
-
+     await login(req, res);
     expect(User.findOne).toHaveBeenCalledWith({
       where: { email: 'test@example.com' },
       attributes: ['userID', 'password', 'name', 'roleID'],
     });
-
     expect(comparePassword).toHaveBeenCalledWith('password123', 'hashedPassword123');
     expect(generateToken).toHaveBeenCalledWith(1);
 
@@ -144,20 +141,14 @@ describe('User Controller', () => {
       sameSite: 'Strict',
       maxAge: 3600000,
     }));
-
     expect(res.cookie).toHaveBeenCalledWith('role', 2, expect.objectContaining({
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Strict',
       maxAge: 3600000,
     }));
-
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({ message: 'Login successful', token: 'mocked_token', roleID: 2 });
   });
-
-
-
-
 
 });

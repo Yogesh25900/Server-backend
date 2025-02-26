@@ -14,13 +14,11 @@ const { DataTypes } = require('sequelize');
         type: DataTypes.TEXT,
         allowNull: false,
       },
-     
     }, {
       tableName: 'query',
       timestamps: true,
     });
     Query.associate = (models) => {
-        // Correct association: Query hasMany Responses
         Query.hasMany(Response, {
             foreignKey: 'queryid',
             as: 'response' // Alias for the relationship

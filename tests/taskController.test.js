@@ -1,5 +1,5 @@
-const Task = require('../models/taskModel');  // Mocked Task model
-const User = require('../models/UserModel');  // Mocke
+const Task = require('../models/taskModel');  
+const User = require('../models/UserModel');  
 // d User model
 const {createTask,updateTask,deleteTask} = require('../controllers/taskController'); // Mocked Task object
 jest.mock('../models/taskModel', () => ({
@@ -10,19 +10,14 @@ jest.mock('../models/taskModel', () => ({
   update: jest.fn()
 
 }));
-
 jest.mock('../models/UserModel', () => ({
   findByPk: jest.fn(),
 }));
 
 describe('Task Controller', () => {
-
   beforeEach(() => {
     jest.clearAllMocks(); // Clear mocks before each test
   });
-
-
-
 
   beforeAll(() => {
     global.console.log = jest.fn(); // Mock console.log
@@ -31,8 +26,6 @@ describe('Task Controller', () => {
   afterAll(() => {
     global.console.log.mockRestore(); // Restore after tests are done
   });
-  
-
 
   // Test POST create a task
   it('should create a new task', async () => {

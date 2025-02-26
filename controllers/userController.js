@@ -3,7 +3,6 @@ const UserStats = require('../models/UserStats');
 const { generateToken } = require('../helpers/jwtUtils'); // JWT helper
 const {  comparePassword } = require('../helpers/bcryptUtils'); // Bcrypt helper
 const { Op } = require('sequelize');  // Import Op for Sequelize operators
-
 require('dotenv').config();
 const getAllUsers = async (req, res) => {
   try {
@@ -66,15 +65,6 @@ const deleteUser = async (req, res) => {
     }
 };
 
-
-
-
-
-
-
-
-
-
 // Utility to generate JWT token
 const createUser = async (req, res) => {
   const { name,email, password } = req.body;
@@ -115,8 +105,6 @@ const createUser = async (req, res) => {
       res.status(500).json({ error: error.message });
   }
 };
-
-
 // Login User
 const login = async (req, res) => {
   const { email, password } = req.body;
@@ -156,16 +144,12 @@ const login = async (req, res) => {
       sameSite: 'Strict',
       maxAge: 3600000,
     });
-
-
     return res.status(200).json({ message: 'Login successful', token, roleID: user.roleID  // Send roleID in response
     });
   } catch (err) {
     return res.status(500).json({ message: 'An unexpected error occurred.', error: err.message });
   }
 };
-
-
 
 // Get user details controller
 const getUserDetails = async (req, res) => {
@@ -191,8 +175,6 @@ const getUserDetails = async (req, res) => {
 };
 
 // Get a single user by name
-
-
 const getUserByName = async (req, res) => {
   try {
     const { name } = req.params; // Get the name from the request parameters
@@ -208,11 +190,9 @@ const getUserByName = async (req, res) => {
         ]
       }
     });
-
     if (count === 0) {
       return res.status(404).json({ message: 'User not found' });
     }
-
     // Return users and total user count
     res.status(200).json({
       users: rows, // The actual users matching the name query
@@ -222,18 +202,12 @@ const getUserByName = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
-
-
 // Update password with reset code
 const resetPassword = async (req, res) => {
   const { email,newPassword } = req.body;
 
   try {
-  
-
-    // Find the user by email
+        // Find the user by email
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
@@ -259,9 +233,6 @@ const resetPassword = async (req, res) => {
     res.status(500).json({ message: 'An error occurred while resetting the password', error: error.message });
   }
 };
-
-
-
 
 // Route to get total users and percentage increase
 const getTotalUsersCount = async (req, res) => {

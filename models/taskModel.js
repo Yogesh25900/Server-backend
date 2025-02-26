@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const {sequelize} = require('../db/db'); // Adjust path based on your structure
 const User = require('./UserModel'); // Import User model
-
 const Task = sequelize.define('Task', {
   taskid: {
     type: DataTypes.INTEGER,

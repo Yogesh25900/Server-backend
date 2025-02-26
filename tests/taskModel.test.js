@@ -1,7 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelizeMock = require('sequelize-mock');
 const mockDB = new sequelizeMock(); // Mocking the DB connection
-const Task = require('../models/taskModel'); // Adjust based on your structure
 const User = require('../models/UserModel'); // Assuming you have this model
 
 // Mock User data for association

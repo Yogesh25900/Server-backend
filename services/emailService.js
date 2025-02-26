@@ -1,5 +1,4 @@
 const transporter = require("../config/mailConfig");
-
 const sendEmail = async (email, subject, message) => {
   const mailOptions = {
     from: process.env.EMAIL,

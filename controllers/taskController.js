@@ -1,10 +1,8 @@
 const Task = require('../models/taskModel');
 const User = require('../models/UserModel');
-
-// ✅ Get all tasks for a specific user
+//  Get all tasks for a specific user
 const getTasksByUser = async (req, res) => {
   const { userID } = req.body;
-  
   try {
     const tasks = await Task.findAll({ where: { userID } });
     res.status(200).json(tasks);
@@ -13,8 +11,7 @@ const getTasksByUser = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
-
-// ✅ Create a new task
+// Create a new task
 const createTask = async (req, res) => {
   const { userID, taskname,taskdescription, status, due_date } = req.body;
 
@@ -31,23 +28,18 @@ const createTask = async (req, res) => {
     res.status(500).json({ error: "Failed to create task" });
   }
 };
-
 const updateTask = async (req, res) => {
   try {
     // Find the task by taskid
     const task = await Task.findByPk(req.params.taskid);
-
     // If the task doesn't exist, return a 404 error
     if (!task) {
       return res.status(404).json({ message: 'Task not found' });
     }
-
     // Validate incoming data if needed (for example: taskname, due_date, status)
     const { taskname, taskdescription, status, due_date } = req.body;
-
     // Prepare the update object, only including fields that are provided
     const updatedFields = {};
-
     if (taskname) updatedFields.taskname = taskname;
     if (taskdescription) updatedFields.taskdescription = taskdescription;
     if (status) updatedFields.status = status;
@@ -58,12 +50,10 @@ const updateTask = async (req, res) => {
       }
       updatedFields.due_date = due_date;
     }
-
     // If no fields are provided to update, return a 400 error
     if (Object.keys(updatedFields).length === 0) {
       return res.status(400).json({ error: 'No fields to update' });
     }
-
     // Update the task with the new details from req.body
     await task.update(updatedFields);
 
@@ -78,10 +68,7 @@ const updateTask = async (req, res) => {
     res.status(500).json({ error: 'Failed to update task' });
   }
 };
-
-
-
-// ✅ Delete a task
+//  Delete a task
 const deleteTask = async (req, res) => {
   const { taskid } = req.params;
 
@@ -99,11 +86,7 @@ const deleteTask = async (req, res) => {
   }
 };
 
-
-
-
 // In taskController.js
-
 const createTaskforApi = async (userID,taskname, taskdescription,status, due_date ) => {
     try {
       const userExists = await User.findByPk(userID);
